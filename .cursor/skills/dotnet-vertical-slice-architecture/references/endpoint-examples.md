@@ -10,8 +10,7 @@ public static class GetCarEndpoint
     public record Response(int Id, string Name, string Model, DateTime CreatedAt);
     
     public static RouteHandlerBuilder MapGetCar(this IEndpointRouteBuilder app)
-        => app.MapGet("/{id:int}", Handler)
-            .WithTags("Cars");
+        => app.MapGet("/{id:int}", Handler);
     
     private static async Task<Results<Ok<Response>, NotFound>> Handler(
         int id,
@@ -38,8 +37,7 @@ public static class CreateCarEndpoint
     public record Response(int Id, string Name, string Model);
 
     public static RouteHandlerBuilder MapCreateCar(this IEndpointRouteBuilder app)
-        => app.MapPost("/", Handler)
-            .WithTags("Cars");
+        => app.MapPost("/", Handler);
 
     private static async Task<Results<Created<Response>, BadRequest<ValidationProblemDetails>>> Handler(
         [AsParameters] Request request,
@@ -71,8 +69,7 @@ public static class UpdateCarEndpoint
     public record Response(int Id, string Name, string Model);
 
     public static RouteHandlerBuilder MapUpdateCar(this IEndpointRouteBuilder app)
-        => app.MapPut("/{id:int}", Handler)
-            .WithTags("Cars");
+        => app.MapPut("/{id:int}", Handler);
 
     private static async Task<Results<Ok<Response>, NotFound, BadRequest<ValidationProblemDetails>>> Handler(
         int id,
@@ -107,8 +104,7 @@ public static class UpdateCarEndpoint
 public static class DeleteCarEndpoint
 {
     public static RouteHandlerBuilder MapDeleteCar(this IEndpointRouteBuilder app)
-        => app.MapDelete("/{id:int}", Handler)
-            .WithTags("Cars");
+        => app.MapDelete("/{id:int}", Handler);
     
     private static async Task<Results<NoContent, NotFound>> Handler(
         int id,
@@ -135,8 +131,7 @@ public static class ListCarsEndpoint
     public record Response(int Id, string Name, string Model);
     
     public static RouteHandlerBuilder MapListCars(this IEndpointRouteBuilder app)
-        => app.MapGet("/", Handler)
-            .WithTags("Cars");
+        => app.MapGet("/", Handler);
     
     private static async Task<Ok<IEnumerable<Response>>> Handler(
         ICarRepository repository,
@@ -157,8 +152,7 @@ public static class SearchCarsEndpoint
     public record Response(int Id, string Name, string Model);
     
     public static RouteHandlerBuilder MapSearchCars(this IEndpointRouteBuilder app)
-        => app.MapGet("/search", Handler)
-            .WithTags("Cars");
+        => app.MapGet("/search", Handler);
     
     private static async Task<Ok<IEnumerable<Response>>> Handler(
         string? name,
@@ -191,10 +185,7 @@ public static class CreateCarEndpoint
     public record Response(int Id, string Name, string Model);
 
     public static RouteHandlerBuilder MapCreateCar(this IEndpointRouteBuilder app)
-        => app.MapPost("/", Handler)
-            .WithTags("Cars")
-            .Produces<Response>(StatusCodes.Status201Created)
-            .Produces<ValidationProblemDetails>(StatusCodes.Status400BadRequest);
+        => app.MapPost("/", Handler);
 
     private static async Task<Results<Created<Response>, BadRequest<ValidationProblemDetails>>> Handler(
         [AsParameters] Request request,
@@ -225,22 +216,29 @@ public static class CreateCarEndpoint
 
 ## Expression Body Syntax Examples
 
-**Simple GET handler:**
-
-```csharp
-private static Task<Results<Ok<Product>, NotFound>> Handler(
-    int id,
-    IProductRepository repository,
-    CancellationToken ct)
-    => repository.GetByIdAsync(id, ct) is { } product
-        ? Task.FromResult(TypedResults.Ok(product))
-        : Task.FromResult(TypedResults.NotFound());
-```
-
-**Simple Map method:**
+**Simple Map method (always use expression body syntax):**
 
 ```csharp
 public static RouteHandlerBuilder MapGetCar(this IEndpointRouteBuilder app)
-    => app.MapGet("/{id:int}", Handler)
-        .WithTags("Cars");
+    => app.MapGet("/{id:int}", Handler);
 ```
+
+**Note on async handlers:**
+
+For async handlers that require await, use standard async/await syntax instead of expression body syntax. Pattern matching on `Task<T>` does not work - you must await the task first:
+
+```csharp
+// Use this pattern for async handlers with await
+private static async Task<Results<Ok<Product>, NotFound>> Handler(
+    int id,
+    IProductRepository repository,
+    CancellationToken ct)
+{
+    var product = await repository.GetByIdAsync(id, ct);
+    return product is null
+        ? TypedResults.NotFound()
+        : TypedResults.Ok(product);
+}
+```
+
+Expression body syntax can only be used for async methods that return `Task.FromResult(...)` without any await operations.

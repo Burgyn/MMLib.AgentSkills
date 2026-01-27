@@ -200,21 +200,50 @@ private static async Task<Results<Ok<Product>, NotFound>> Handler(
 }
 ```
 
-**Expression body syntax for all single-line functions and methods:**
+**Expression body syntax for simple methods:**
 
 For any function or method that can be written as a single expression (including handlers and utility methods), use the expression-bodied member syntax (`=>`):
 
 ```csharp
+// Good: Simple Map method
+public static RouteHandlerBuilder MapGetCar(this IEndpointRouteBuilder app)
+    => app.MapGet("/{id:int}", Handler);
+
+// Good: Simple synchronous method
+public int CalculateTotal(int a, int b) => a + b;
+```
+
+**Important: Expression body syntax and async methods:**
+
+**Do NOT use expression body syntax for async methods that require await**. Pattern matching on `Task<T>` does not work - you must await the task first.
+
+```csharp
+// BAD: This does NOT work - pattern matching on Task<Product?>
 private static Task<Results<Ok<Product>, NotFound>> Handler(
     int id,
     IProductRepository repository,
     CancellationToken ct)
-    => repository.GetByIdAsync(id, ct) is { } product
+    => repository.GetByIdAsync(id, ct) is { } product  // ERROR: Task<Product?> is not Product?
         ? Task.FromResult<Results<Ok<Product>, NotFound>>(TypedResults.Ok(product))
         : Task.FromResult<Results<Ok<Product>, NotFound>>(TypedResults.NotFound());
+
+// GOOD: Use async/await syntax for async methods
+private static async Task<Results<Ok<Product>, NotFound>> Handler(
+    int id,
+    IProductRepository repository,
+    CancellationToken ct)
+{
+    var product = await repository.GetByIdAsync(id, ct);
+    return product is null
+        ? TypedResults.NotFound()
+        : TypedResults.Ok(product);
+}
 ```
 
-This style should be consistently applied to all simple or single-line methods for brevity and clarity, not just handlers.
+**Guidelines:**
+- Use expression body syntax (`=>`) for simple synchronous methods and Map methods
+- Use standard async/await syntax for async methods that require await
+- Expression body syntax can be used for async methods that return `Task.FromResult(...)` without await
 
 **More patterns are supported; these are the most common:**
 - `Results<Ok<T>, NotFound>` – most common pattern (e.g., details or fetch by ID)

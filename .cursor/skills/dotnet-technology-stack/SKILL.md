@@ -49,7 +49,37 @@ Use **Scalar** for displaying OpenAPI/Swagger documentation in ASP.NET Core appl
 dotnet add package Scalar.AspNetCore
 ```
 
-**Usage:** Configure Scalar in your `Program.cs` or startup configuration to replace or complement Swagger UI.
+**Integration Example:**
+
+Add the using directive and configure Scalar in `Program.cs`:
+
+```csharp
+using Scalar.AspNetCore;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
+
+app.Run();
+```
+
+**Access:** The Scalar API Reference is accessible at `/scalar` by default.
+
+**Customization:** You can customize the route and options:
+
+```csharp
+app.MapScalarApiReference("/docs", options =>
+{
+    options.WithTitle("My API");
+});
+```
 
 ## Database Selection
 
