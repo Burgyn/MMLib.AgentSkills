@@ -10,14 +10,14 @@ To download all skills from this repository, use the following instructions:
 Download all Agent Skills from the repository https://github.com/Burgyn/MMLib.AgentSkills.
 Skills are located in the .cursor/skills/ directory. For each skill, copy the entire directory
 with all files (SKILL.md and any subdirectories scripts/, references/, assets/)
-to the **current project's** `.cursor/skills/` directory (located in the workspace root)
-so the skills are available for use in this project.
+to the location where the IDE expects skills to be located.
 
-**IMPORTANT**: 
-- Download skills to the **current project's** `.cursor/skills/` directory (in the workspace root)
+**IMPORTANT**:
+- For Cursor IDE: Download skills to `<workspace_root>/.cursor/skills/` directory (located in the workspace root)
+- The IDE automatically looks for skills in this location - this is where Cursor expects to find them
 - Do NOT download to the global user directory (`~/.cursor/skills/`)
-- The target path should be: `<workspace_root>/.cursor/skills/`
 - Always use the workspace root path, not the user's home directory
+- The target path should be: `<workspace_root>/.cursor/skills/` where `<workspace_root>` is the root of the current project workspace
 ```
 
 ## Available Skills
